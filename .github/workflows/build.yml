@@ -226,7 +226,7 @@ jobs:
       - name: Install Tox & auditwheel
         run: pip install tox auditwheel
       - name: Dist
-        run: SDKROOT=$(xcrun -sdk macosx11.0 --show-sdk-path) MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx11.0 --show-sdk-platform-version) tox -e build-wheel
+        run: tox -e build-wheel
         working-directory: ./bindings/python
       - run: unzip -u dist/*.whl
         working-directory: ./bindings/python
