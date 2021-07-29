@@ -1,84 +1,4 @@
-//! # css-inline
-//!
-//! A crate for inlining CSS into HTML documents. When you send HTML emails, you need to use "style"
-//! attributes instead of "style" tags.
-//!
-//! For example, this HTML:
-//!
-//! ```html
-//! <html>
-//!     <head>
-//!         <title>Test</title>
-//!         <style>h1 { color:blue; }</style>
-//!     </head>
-//!     <body>
-//!         <h1>Big Text</h1>
-//!     </body>
-//! </html>
-//! ```
-//!
-//! Will be turned into this:
-//!
-//! ```html
-//! <html>
-//!     <head><title>Test</title></head>
-//!     <body>
-//!         <h1 style="color:blue;">Big Text</h1>
-//!     </body>
-//! </html>
-//! ```
-//!
-//! ## Usage
-//!
-//! ```rust
-//! const HTML: &str = r#"<html>
-//! <head>
-//!     <title>Test</title>
-//!     <style>h1 { color:blue; }</style>
-//! </head>
-//! <body>
-//!     <h1>Big Text</h1>
-//! </body>
-//! </html>"#;
-//!
-//!fn main() -> Result<(), css_inline::InlineError> {
-//!    let inlined = css_inline::inline(HTML)?;  // shortcut with default options
-//!    // Do something with inlined HTML, e.g. send an email
-//!    Ok(())
-//! }
-//! ```
-//!
-//! ### Features & Configuration
-//!
-//! `css-inline` can be configured by using `CSSInliner::options()` that implements the Builder pattern:
-//!
-//! ```rust
-//! const HTML: &str = r#"<html>
-//! <head>
-//!     <title>Test</title>
-//!     <style>h1 { color:blue; }</style>
-//! </head>
-//! <body>
-//!     <h1>Big Text</h1>
-//! </body>
-//! </html>"#;
-//!
-//! fn main() -> Result<(), css_inline::InlineError> {
-//!     let inliner = css_inline::CSSInliner::options()
-//!         .load_remote_stylesheets(false)
-//!         .build();
-//!     let inlined = inliner.inline(HTML);
-//!     // Do something with inlined HTML, e.g. send an email
-//!     Ok(())
-//! }
-//! ```
-//!
-//! - `inline_style_tags`. Whether to inline CSS from "style" tags. Default: `true`
-//! - `remove_style_tags`. Remove "style" tags after inlining. Default: `false`
-//! - `base_url`. Base URL to resolve relative URLs. Default: `None`
-//! - `load_remote_stylesheets`. Whether remote stylesheets should be loaded or not. Default: `true`
-//! - `extra_css`. Additional CSS to inline. Default: `None`
-//!
+#![doc = include_str!("../../README.md")]
 #![warn(
     clippy::doc_markdown,
     clippy::redundant_closure,
@@ -86,6 +6,7 @@
     clippy::match_same_arms,
     clippy::needless_borrow,
     clippy::print_stdout,
+    clippy::nursery,
     clippy::integer_arithmetic,
     clippy::cast_possible_truncation,
     clippy::unwrap_used,
@@ -116,7 +37,7 @@ use ahash::AHashMap;
 pub use error::InlineError;
 use smallvec::{smallvec, SmallVec};
 use std::{borrow::Cow, collections::hash_map::Entry, fs, io::Write};
-pub use url::{ParseError, Url};
+use url::Url;
 
 /// Configuration options for CSS inlining process.
 #[derive(Debug)]
@@ -152,14 +73,14 @@ impl<'a> InlineOptions<'a> {
 
     /// Override whether "style" tags should be inlined.
     #[must_use]
-    pub fn inline_style_tags(mut self, inline_style_tags: bool) -> Self {
+    pub const fn inline_style_tags(mut self, inline_style_tags: bool) -> Self {
         self.inline_style_tags = inline_style_tags;
         self
     }
 
     /// Override whether "style" tags should be removed after processing.
     #[must_use]
-    pub fn remove_style_tags(mut self, remove_style_tags: bool) -> Self {
+    pub const fn remove_style_tags(mut self, remove_style_tags: bool) -> Self {
         self.remove_style_tags = remove_style_tags;
         self
     }
@@ -173,7 +94,7 @@ impl<'a> InlineOptions<'a> {
 
     /// Override whether remote stylesheets should be loaded.
     #[must_use]
-    pub fn load_remote_stylesheets(mut self, load_remote_stylesheets: bool) -> Self {
+    pub const fn load_remote_stylesheets(mut self, load_remote_stylesheets: bool) -> Self {
         self.load_remote_stylesheets = load_remote_stylesheets;
         self
     }
